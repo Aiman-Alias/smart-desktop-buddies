@@ -1,4 +1,16 @@
-const API_URL = 'http://localhost:8000/api';
+// Dynamic API URL - uses the same hostname as the frontend but port 8000
+const getApiUrl = (): string => {
+  if (typeof window !== 'undefined') {
+    // Use the same hostname as the frontend, but port 8000
+    const apiUrl = `${window.location.protocol}//${window.location.hostname}:8000/api`;
+    console.log('API URL:', apiUrl, 'from hostname:', window.location.hostname);
+    return apiUrl;
+  }
+  return 'http://localhost:8000/api';
+};
+
+// Get API URL dynamically each time (not evaluated at module load)
+const API_URL = () => getApiUrl();
 
 export interface LoginResponse {
   access: string;
@@ -149,7 +161,7 @@ export const api = {
     console.log('=== API Login Request ===');
     console.log('Request data:', { ...data, password: '[REDACTED]' });
     
-    const response = await fetch(`${API_URL}/auth/login/`, {
+    const response = await fetch(`${API_URL()}/auth/login/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -178,7 +190,7 @@ export const api = {
     console.log('Request data:', { ...data, password: '[REDACTED]' });
     
     try {
-      const response = await fetch(`${API_URL}/auth/register/`, {
+      const response = await fetch(`${API_URL()}/auth/register/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -219,7 +231,7 @@ export const api = {
           // HTML error page (likely 500 or 404) or network error
           const text = await response.text();
           console.error('Registration request failed with non-JSON response:', text.substring(0, 200));
-          throw new Error(`Server error (${response.status}). Please ensure the backend server is running at ${API_URL}`);
+          throw new Error(`Server error (${response.status}). Please ensure the backend server is running at ${API_URL()}`);
         }
       }
 
@@ -231,7 +243,7 @@ export const api = {
       // Handle network errors (Failed to fetch)
       if (error instanceof TypeError && error.message === 'Failed to fetch') {
         console.error('Network error - backend server may not be running');
-        throw new Error(`Cannot connect to backend server at ${API_URL}. Please ensure the Django server is running.`);
+        throw new Error(`Cannot connect to backend server at ${API_URL()}. Please ensure the Django server is running.`);
       }
       throw error;
     }
@@ -241,7 +253,7 @@ export const api = {
     console.log('=== API Token Refresh Request ===');
     console.log('Refresh token:', refresh ? '[REDACTED]' : 'none');
     
-    const response = await fetch(`${API_URL}/auth/token/refresh/`, {
+    const response = await fetch(`${API_URL()}/auth/token/refresh/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -273,7 +285,7 @@ export const api = {
 
     console.log('Request headers:', headers);
 
-    const response = await fetch(`${API_URL}/auth/profile/`, {
+    const response = await fetch(`${API_URL()}/auth/profile/`, {
       headers,
       credentials: 'include',
     });
@@ -302,7 +314,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/auth/profile/`, {
+    const response = await fetch(`${API_URL()}/auth/profile/`, {
       method: 'PATCH',
       headers,
       credentials: 'include',
@@ -331,7 +343,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/auth/change-password/`, {
+    const response = await fetch(`${API_URL()}/auth/change-password/`, {
       method: 'POST',
       headers,
       credentials: 'include',
@@ -357,7 +369,7 @@ export const api = {
   async verifyEmail(token: string, email: string): Promise<{ message: string }> {
     console.log('=== API Verify Email Request ===');
     
-    const response = await fetch(`${API_URL}/auth/verify-email/?token=${token}&email=${encodeURIComponent(email)}`, {
+    const response = await fetch(`${API_URL()}/auth/verify-email/?token=${token}&email=${encodeURIComponent(email)}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -382,7 +394,7 @@ export const api = {
   async forgotPassword(email: string): Promise<{ message: string }> {
     console.log('=== API Forgot Password Request ===');
     
-    const response = await fetch(`${API_URL}/auth/forgot-password/`, {
+    const response = await fetch(`${API_URL()}/auth/forgot-password/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -408,7 +420,7 @@ export const api = {
   async resetPassword(token: string, email: string, newPassword: string, confirmPassword: string): Promise<{ message: string }> {
     console.log('=== API Reset Password Request ===');
     
-    const response = await fetch(`${API_URL}/auth/reset-password/`, {
+    const response = await fetch(`${API_URL()}/auth/reset-password/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -457,7 +469,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/motivation/quotes/zen/?type=${type}`, {
+    const response = await fetch(`${API_URL()}/motivation/quotes/zen/?type=${type}`, {
       headers,
       credentials: 'include',
     });
@@ -484,7 +496,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/calendar/google/authorize/`, {
+    const response = await fetch(`${API_URL()}/calendar/google/authorize/`, {
       headers,
       credentials: 'include',
     });
@@ -511,7 +523,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/calendar/connections/`, {
+    const response = await fetch(`${API_URL()}/calendar/connections/`, {
       headers,
       credentials: 'include',
     });
@@ -547,7 +559,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/calendar/connections/${id}/`, {
+    const response = await fetch(`${API_URL()}/calendar/connections/${id}/`, {
       method: 'DELETE',
       headers,
       credentials: 'include',
@@ -576,7 +588,7 @@ export const api = {
 
     const body = connectionId ? JSON.stringify({ connection_id: connectionId }) : JSON.stringify({});
 
-    const response = await fetch(`${API_URL}/calendar/sync/`, {
+    const response = await fetch(`${API_URL()}/calendar/sync/`, {
       method: 'POST',
       headers,
       credentials: 'include',
@@ -641,7 +653,7 @@ export const api = {
       page_size: pageSize.toString(),
     });
 
-    const response = await fetch(`${API_URL}/calendar/events/upcoming/?${params}`, {
+    const response = await fetch(`${API_URL()}/calendar/events/upcoming/?${params}`, {
       headers,
       credentials: 'include',
     });
@@ -668,7 +680,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/chatbot/messages/`, {
+    const response = await fetch(`${API_URL()}/chatbot/messages/`, {
       headers,
       credentials: 'include',
     });
@@ -696,7 +708,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/chatbot/chat/`, {
+    const response = await fetch(`${API_URL()}/chatbot/chat/`, {
       method: 'POST',
       headers,
       credentials: 'include',
@@ -726,7 +738,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/chatbot/messages/${id}/`, {
+    const response = await fetch(`${API_URL()}/chatbot/messages/${id}/`, {
       method: 'DELETE',
       headers,
       credentials: 'include',
@@ -752,7 +764,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/mood-log/`, {
+    const response = await fetch(`${API_URL()}/mood-log/`, {
       headers,
       credentials: 'include',
     });
@@ -791,7 +803,7 @@ export const api = {
 
     console.log('Request body:', JSON.stringify(body, null, 2));
 
-    const response = await fetch(`${API_URL}/mood-log/`, {
+    const response = await fetch(`${API_URL()}/mood-log/`, {
       method: 'POST',
       headers,
       credentials: 'include',
@@ -821,7 +833,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/mood-log/${id}/`, {
+    const response = await fetch(`${API_URL()}/mood-log/${id}/`, {
       method: 'PATCH',
       headers,
       credentials: 'include',
@@ -876,7 +888,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/mood-log/${id}/`, {
+    const response = await fetch(`${API_URL()}/mood-log/${id}/`, {
       method: 'DELETE',
       headers,
       credentials: 'include',
@@ -902,7 +914,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/mood-log/stats/`, {
+    const response = await fetch(`${API_URL()}/mood-log/stats/`, {
       headers,
       credentials: 'include',
     });
@@ -929,7 +941,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/tasks/`, {
+    const response = await fetch(`${API_URL()}/tasks/`, {
       headers,
       credentials: 'include',
     });
@@ -963,7 +975,7 @@ export const api = {
       body.due_date = due_date;
     }
 
-    const response = await fetch(`${API_URL}/tasks/`, {
+    const response = await fetch(`${API_URL()}/tasks/`, {
       method: 'POST',
       headers,
       credentials: 'include',
@@ -1005,7 +1017,7 @@ export const api = {
     if (due_date !== undefined) body.due_date = due_date;
 
     // Use PATCH for partial updates (allows updating only specific fields)
-    const response = await fetch(`${API_URL}/tasks/${id}/`, {
+    const response = await fetch(`${API_URL()}/tasks/${id}/`, {
       method: 'PATCH',
       headers,
       credentials: 'include',
@@ -1035,7 +1047,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/tasks/${id}/`, {
+    const response = await fetch(`${API_URL()}/tasks/${id}/`, {
       method: 'DELETE',
       headers,
       credentials: 'include',
@@ -1062,7 +1074,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/tasks/complete/${id}/`, {
+    const response = await fetch(`${API_URL()}/tasks/complete/${id}/`, {
       method: 'PUT',
       headers,
       credentials: 'include',
@@ -1090,7 +1102,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/motivation/goals/`, {
+    const response = await fetch(`${API_URL()}/motivation/goals/`, {
       headers,
       credentials: 'include',
     });
@@ -1118,7 +1130,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/motivation/goals/`, {
+    const response = await fetch(`${API_URL()}/motivation/goals/`, {
       method: 'POST',
       headers,
       credentials: 'include',
@@ -1154,7 +1166,7 @@ export const api = {
     if (target_date !== undefined) body.target_date = target_date;
     if (status !== undefined) body.status = status;
 
-    const response = await fetch(`${API_URL}/motivation/goals/${id}/`, {
+    const response = await fetch(`${API_URL()}/motivation/goals/${id}/`, {
       method: 'PUT',
       headers,
       credentials: 'include',
@@ -1184,7 +1196,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/motivation/goals/${id}/`, {
+    const response = await fetch(`${API_URL()}/motivation/goals/${id}/`, {
       method: 'DELETE',
       headers,
       credentials: 'include',
@@ -1211,7 +1223,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/screen-activity/analytics/?days=${days}`, {
+    const response = await fetch(`${API_URL()}/screen-activity/analytics/?days=${days}`, {
       headers,
       credentials: 'include',
     });
@@ -1239,7 +1251,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/screen-activity/focus-sessions/`, {
+    const response = await fetch(`${API_URL()}/screen-activity/focus-sessions/`, {
       method: 'POST',
       headers,
       credentials: 'include',
@@ -1269,7 +1281,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/screen-activity/focus-sessions/${id}/`, {
+    const response = await fetch(`${API_URL()}/screen-activity/focus-sessions/${id}/`, {
       method: 'PATCH',
       headers,
       credentials: 'include',
@@ -1298,7 +1310,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/screen-activity/focus-sessions/`, {
+    const response = await fetch(`${API_URL()}/screen-activity/focus-sessions/`, {
       headers,
       credentials: 'include',
     });
@@ -1326,7 +1338,7 @@ export const api = {
       ...getAuthHeader(),
     };
 
-    const response = await fetch(`${API_URL}/screen-activity/focus-sessions/${id}/`, {
+    const response = await fetch(`${API_URL()}/screen-activity/focus-sessions/${id}/`, {
       method: 'DELETE',
       headers,
       credentials: 'include',

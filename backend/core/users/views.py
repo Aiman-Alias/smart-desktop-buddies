@@ -80,6 +80,16 @@ class LoginView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
+        # Check if email is verified
+        if not user.email_verified:
+            return Response(
+                {
+                    'error': 'Please verify your email before logging in. Check your inbox for the verification link.',
+                    'email_verified': False
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         refresh = RefreshToken.for_user(user)
         
         return Response({
