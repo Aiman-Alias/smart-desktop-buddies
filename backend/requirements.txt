@@ -4,6 +4,9 @@ djangorestframework-simplejwt==5.3.1
 psycopg2-binary==2.9.9
 requests==2.31.0
 python-decouple==3.8
+python-dotenv==1.0.0
+django-cors-headers==4.3.1
+Pillow==10.2.0
 cryptography==42.0.8
 google-auth==2.29.0
 google-auth-oauthlib==1.2.0
